@@ -22,6 +22,10 @@ Artisan::command('inspire', function () {
 |--------------------------------------------------------------------------
 | Scheduler
 |--------------------------------------------------------------------------
+|
+| ตั้งเวลาให้ระบบตรวจสอบใบขับขี่ที่ใกล้หมดอายุ
+| ทุกวันเวลา 09:00
+|
 */
 
-Schedule::command('check:license-expire')->everyFiveMinutes();
+Schedule::command('check:license-expire')->dailyAt('09:00');
