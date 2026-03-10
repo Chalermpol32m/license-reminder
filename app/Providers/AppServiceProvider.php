@@ -6,6 +6,7 @@ use App\Models\DriverLicense;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
 {
+    // บังคับให้ Laravel สร้าง URL เป็น https บน Railway
+    if (env('APP_ENV') === 'production') {
+        URL::forceScheme('https');
+    }
 
 View::composer('*', function ($view) {
 
