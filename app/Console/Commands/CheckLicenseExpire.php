@@ -13,88 +13,90 @@ class CheckLicenseExpire extends Command
     protected $description = 'ตรวจสอบใบขับขี่ที่ใกล้หมดอายุ';
 
     public function handle()
-{
+    {
 
-    $licenses = DriverLicense::all();
+        $licenses = DriverLicense::all();
 
-    $this->info("=================================");
-    $this->info("   License Expire Checker");
-    $this->info("=================================");
+        $this->info("=================================");
+        $this->info("   License Expire Checker");
+        $this->info("=================================");
 
-    foreach ($licenses as $license) {
+        foreach ($licenses as $license) {
 
-        $days = (int) now()->diffInDays($license->expire_date, false);
+            $expire = Carbon::parse($license->expire_date);
+            $days = now()->diffInDays($expire, false);
 
-        $this->info($license->driver_name . " เหลือ " . $days . " วัน");
+            $this->info($license->driver_name . " เหลือ " . $days . " วัน");
 
-        // แจ้งเตือนช่วง 15 วัน
-        if ($days <= 15 && $days > 7) {
+            // แจ้งเตือนช่วง 15 วัน
+            if ($days <= 15 && $days > 7) {
 
-            $this->warn("⚠ แจ้งเตือนใกล้หมดอายุ : " . $license->driver_name);
-            $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 15 วัน", $days);
+                $this->warn("⚠ แจ้งเตือนใกล้หมดอายุ : " . $license->driver_name);
+                $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 15 วัน", $days);
+
+            }
+
+            // แจ้งเตือนช่วง 7 วัน
+            elseif ($days <= 7 && $days > 3) {
+
+                $this->warn("⚠ แจ้งเตือนใกล้หมดอายุ : " . $license->driver_name);
+                $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 7 วัน", $days);
+
+            }
+
+            // แจ้งเตือนช่วง 3 วัน
+            elseif ($days <= 3 && $days > 0) {
+
+                $this->error("🚨 ใกล้หมดอายุ : " . $license->driver_name);
+                $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 3 วัน", $days);
+
+            }
+
+            // หมดอายุวันนี้
+            elseif ($days == 0) {
+
+                $this->error("🚨 หมดอายุวันนี้ : " . $license->driver_name);
+                $this->sendLine($license, "ใบขับขี่หมดอายุวันนี้", $days);
+
+            }
+
+            // หมดอายุแล้ว
+            elseif ($days < 0) {
+
+                $this->error("❌ หมดอายุแล้ว : " . $license->driver_name);
+                $this->sendLine($license, "ใบขับขี่หมดอายุแล้ว", $days);
+
+            }
 
         }
 
-        // แจ้งเตือนช่วง 7 วัน
-        if ($days <= 7 && $days > 3) {
-
-            $this->warn("⚠ แจ้งเตือนใกล้หมดอายุ : " . $license->driver_name);
-            $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 7 วัน", $days);
-
-        }
-
-        // แจ้งเตือนช่วง 3 วัน
-        if ($days <= 3 && $days > 0) {
-
-            $this->error("🚨 ใกล้หมดอายุ : " . $license->driver_name);
-            $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 3 วัน", $days);
-
-        }
-
-        // หมดอายุวันนี้
-        if ($days == 0) {
-
-            $this->error("🚨 หมดอายุวันนี้ : " . $license->driver_name);
-            $this->sendLine($license, "ใบขับขี่หมดอายุวันนี้", $days);
-
-        }
-
-        // หมดอายุแล้ว
-        if ($days < 0) {
-
-            $this->error("❌ หมดอายุแล้ว : " . $license->driver_name);
-            $this->sendLine($license, "ใบขับขี่หมดอายุแล้ว", $days);
-
-        }
-
+        $this->info("=================================");
     }
 
-    $this->info("=================================");
-}
+    private function sendLine($license, $title, $days)
+    {
 
-   private function sendLine($license, $title, $days)
-{
-    Carbon::setLocale('th');
+        Carbon::setLocale('th');
 
-    $expireDate = Carbon::parse($license->expire_date)
-        ->translatedFormat('d F Y');
+        $expireDate = Carbon::parse($license->expire_date)
+            ->translatedFormat('d F Y');
 
-    $message = "🚗 แจ้งเตือนใบขับขี่\n";
-    $message .= "━━━━━━━━━━━━━━\n";
-    $message .= "👤 คนขับ : {$license->driver_name}\n";
-    $message .= "🚘 ทะเบียน : {$license->plate_number}\n";
-    $message .= "📅 วันหมดอายุ : {$expireDate}\n";
-    $message .= "⏳ เหลือเวลา : {$days} วัน\n";
-    $message .= "━━━━━━━━━━━━━━\n";
-    $message .= "⚠ {$title}\n";
-    $message .= "📌 กรุณาดำเนินการต่ออายุ";
+        $message = "🚗 แจ้งเตือนใบขับขี่\n";
+        $message .= "━━━━━━━━━━━━━━\n";
+        $message .= "👤 คนขับ : {$license->driver_name}\n";
+        $message .= "🚘 ทะเบียน : {$license->plate_number}\n";
+        $message .= "📅 วันหมดอายุ : {$expireDate}\n";
+        $message .= "⏳ เหลือเวลา : {$days} วัน\n";
+        $message .= "━━━━━━━━━━━━━━\n";
+        $message .= "⚠ {$title}\n";
+        $message .= "📌 กรุณาดำเนินการต่ออายุ";
 
-    Http::withHeaders([
-        'Authorization' => 'Bearer ' . env('LINE_NOTIFY_TOKEN'),
-    ])->asForm()->post('https://notify-api.line.me/api/notify', [
-        'message' => $message
-    ]);
+        Http::withHeaders([
+            'Authorization' => 'Bearer ' . env('LINE_NOTIFY_TOKEN'),
+        ])->asForm()->post('https://notify-api.line.me/api/notify', [
+            'message' => $message
+        ]);
 
-    $this->info("ส่ง LINE แล้ว: {$license->driver_name}");
-}
+        $this->info("ส่ง LINE แล้ว: {$license->driver_name}");
+    }
 }
