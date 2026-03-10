@@ -27,4 +27,16 @@ Route::post('/webhook', function (\Illuminate\Http\Request $request) {
     return response()->json(['status' => 'ok']);
 });
 
+
+Route::get('/create-user', function () {
+
+    User::create([
+        'name' => 'admin',
+        'email' => 'admin@email.com',
+        'password' => Hash::make('12345678'),
+    ]);
+
+    return "User created";
+});
+
 require __DIR__.'/auth.php';
