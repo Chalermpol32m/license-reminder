@@ -4,6 +4,8 @@
 use App\Http\Controllers\LicenseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DriverLicenseController;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 
 Route::get('/', function () {
     return redirect('/dashboard');
