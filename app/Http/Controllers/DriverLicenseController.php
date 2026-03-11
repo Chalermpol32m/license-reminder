@@ -28,7 +28,7 @@ class DriverLicenseController extends Controller
         $expireDate = Carbon::parse($license->expire_date);
         $today = Carbon::today();
 
-        $license->days_left = $today->diffInDays($expireDate, false);
+        $license->days_left = $today->diffInDays($expireDate, false)+1;
     }
 
     $total = $licenses->count();
@@ -132,7 +132,7 @@ public function index(Request $request)
 
     // คำนวณสถานะเพื่อแสดง badge
     foreach ($licenses as $license) {
-        $daysLeft = Carbon::today()->diffInDays(Carbon::parse($license->expire_date), false);
+        $daysLeft = Carbon::today()->diffInDays(Carbon::parse($license->expire_date), false)+1;
 
         if ($daysLeft <= 3) {
             $license->status = 'danger';
