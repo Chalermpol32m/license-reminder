@@ -1,6 +1,5 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+<form method="POST" action="http://license-reminder.onrender.com/register">        @csrf
 
         <!-- Name -->
         <div>
