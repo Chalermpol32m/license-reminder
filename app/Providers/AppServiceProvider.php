@@ -21,14 +21,13 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
+   public function boot(): void
 {
-    // บังคับให้ Laravel สร้าง URL เป็น https บน Railway
-    if (env('APP_ENV') === 'production') {
+    if (config('app.env') === 'production') {
         URL::forceScheme('https');
     }
 
-View::composer('*', function ($view) {
+    View::composer('*', function ($view) {
 
 if(!Auth::check()){
 return;
