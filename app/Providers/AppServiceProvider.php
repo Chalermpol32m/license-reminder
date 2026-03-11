@@ -37,7 +37,7 @@ $licenses = DriverLicense::where('user_id', Auth::id())->get();
 
 foreach ($licenses as $license) {
 
-$days = Carbon::today()->diffInDays(Carbon::parse($license->expire_date), false);
+$days = Carbon::today()->diffInDays(Carbon::parse($license->expire_date), false)+1;
 $license->days_left = $days;
 
 }
