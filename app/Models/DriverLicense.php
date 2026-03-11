@@ -27,12 +27,12 @@ protected $fillable = [
 
    public function getDaysLeftAttribute()
 {
-    return (int) Carbon::now()->diffInDays($this->expire_date, false);
+    return (int) Carbon::now()->diffInDays($this->expire_date, false)+1;
 }
 
 public function getStatusAttribute()
 {
-    $days = Carbon::now()->diffInDays($this->expire_date, false);
+    $days = Carbon::now()->diffInDays($this->expire_date, false)+1;
 
     if ($days <= 3) {
         return 'danger';   // 🔴 เหลือ 3 วัน
