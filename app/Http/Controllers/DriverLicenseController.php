@@ -63,10 +63,10 @@ class DriverLicenseController extends Controller
 
     // กราฟรายเดือน
     $monthly = DriverLicense::where('user_id', Auth::id())
-        ->selectRaw('strftime("%m", expire_date) as month, COUNT(*) as total')
-        ->groupBy('month')
-        ->orderBy('month')
-        ->get();
+    ->selectRaw('EXTRACT(MONTH FROM expire_date) as month, COUNT(*) as total')
+    ->groupBy('month')
+    ->orderBy('month')
+    ->get();
 
     // ใบขับขี่หมดภายใน 30 วัน
     $trendLicenses = DriverLicense::where('user_id', Auth::id())
