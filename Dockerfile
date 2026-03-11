@@ -13,8 +13,8 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-Run php artisan storage:link
+RUN php artisan storage:link
 
 EXPOSE 10000
 
-CMD php artisan serve --host=0.0.0.0 --port=$PORT
+CMD php artisan serve --host=0.0.0.0 --port=$PORT & php artisan schedule:work

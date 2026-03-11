@@ -15,7 +15,7 @@ class CheckLicenseExpire extends Command
     public function handle()
     {
 
-        $licenses = DriverLicense::all();
+        $licenses = DriverLicense::whereDate('expire_date','<=', now()->addDays(15))->get();
 
         $this->info("=================================");
         $this->info("   License Expire Checker");
@@ -24,12 +24,12 @@ class CheckLicenseExpire extends Command
         foreach ($licenses as $license) {
 
             $expire = Carbon::parse($license->expire_date);
-            $days = now()->diffInDays($expire, false);
+            $days = now()->diffInDays($expire, false)+1;
 
             $this->info($license->driver_name . " เหลือ " . $days . " วัน");
 
             // แจ้งเตือนช่วง 15 วัน
-            if ($days <= 15 && $days > 7) {
+            if ($days == 15 && $days > 7) {
 
                 $this->warn("⚠ แจ้งเตือนใกล้หมดอายุ : " . $license->driver_name);
                 $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 15 วัน", $days);
@@ -37,7 +37,7 @@ class CheckLicenseExpire extends Command
             }
 
             // แจ้งเตือนช่วง 7 วัน
-            elseif ($days <= 7 && $days > 3) {
+            elseif ($days == 7 && $days > 3) {
 
                 $this->warn("⚠ แจ้งเตือนใกล้หมดอายุ : " . $license->driver_name);
                 $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 7 วัน", $days);
@@ -45,7 +45,7 @@ class CheckLicenseExpire extends Command
             }
 
             // แจ้งเตือนช่วง 3 วัน
-            elseif ($days <= 3 && $days > 0) {
+            elseif ($days == 3 && $days > 0) {
 
                 $this->error("🚨 ใกล้หมดอายุ : " . $license->driver_name);
                 $this->sendLine($license, "ใบขับขี่ใกล้หมดอายุภายใน 3 วัน", $days);
@@ -97,6 +97,10 @@ class CheckLicenseExpire extends Command
             'message' => $message
         ]);
 
-        $this->info("ส่ง LINE แล้ว: {$license->driver_name}");
-    }
+   if ($response->successful()) {
+    $this->info("ส่ง LINE สำเร็จ: {$license->driver_name}");
+} else {
+    $this->error("LINE ส่งไม่สำเร็จ");
 }
+    }
+    }
