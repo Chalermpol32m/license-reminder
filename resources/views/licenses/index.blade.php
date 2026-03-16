@@ -141,7 +141,6 @@ default => '',
 src="{{ asset('storage/'.$license->license_image) }}"
 class="w-24 h-16 object-cover rounded border shadow cursor-pointer hover:scale-110 transition">
 
-
 <!-- Hover Card -->
 
 <div
