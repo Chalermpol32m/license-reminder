@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DriverLicenseController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\DeliveryJobController;
 
 Route::get('/', function () {
     return redirect('/dashboard');
@@ -13,6 +14,8 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
 
+    Route::post('/jobs/auto-assign',[DeliveryJobController::class,'autoAssign']);
+    
     Route::get('/dashboard', [DriverLicenseController::class, 'dashboard'])
         ->name('dashboard');
 
@@ -29,6 +32,13 @@ Route::post('/webhook', function (\Illuminate\Http\Request $request) {
     return response()->json(['status' => 'ok']);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Transport Jobs
+|--------------------------------------------------------------------------
+*/
+Route::get('/jobs',[DeliveryJobController::class,'index']);
+Route::post('/jobs/store',[DeliveryJobController::class,'store']);
 
 Route::get('/create-user', function () {
 
