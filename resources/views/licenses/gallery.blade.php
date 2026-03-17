@@ -21,15 +21,19 @@
     <!-- GALLERY GRID -->
     <div id="galleryGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
 
-        @foreach($licenses as $license)
+        @forelse($licenses as $license)
 
         <div class="gallery-card bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 text-center">
 
-            <div class="aspect-[3/2] overflow-hidden rounded-lg bg-gray-100">
+            <div class="aspect-[3/2] overflow-hidden rounded-lg bg-gray-100 flex items-center justify-center">
 
-                <img
-                    src="{{ asset('storage/'.$license->license_image) }}"
-                    class="license-img preview-img w-full h-full object-cover">
+                @if($license->license_image)
+                    <img
+                        src="{{ $license->license_image }}"
+                        class="license-img preview-img w-full h-full object-cover">
+                @else
+                    <span class="text-gray-400 text-sm">ไม่มีรูป</span>
+                @endif
 
             </div>
 
@@ -43,25 +47,22 @@
 
         </div>
 
-        @endforeach
+        @empty
+            <p class="text-gray-500">ไม่มีข้อมูล</p>
+        @endforelse
 
     </div>
 
 </div>
 
-
 <!-- POPUP PREVIEW -->
 <div id="imagePopup" class="fixed hidden z-50 pointer-events-none">
-
     <img id="popupImage"
         class="w-72 rounded-lg shadow-2xl border">
-
 </div>
-
 
 <!-- SEARCH SCRIPT -->
 <script>
-
 document.addEventListener("DOMContentLoaded", function(){
 
     const input = document.getElementById("searchInput");
@@ -86,9 +87,7 @@ document.addEventListener("DOMContentLoaded", function(){
     });
 
 });
-
 </script>
-
 
 <!-- HOVER POPUP SCRIPT -->
 <script>
@@ -99,31 +98,23 @@ const popupImg = document.getElementById("popupImage");
 document.querySelectorAll(".preview-img").forEach(img => {
 
     img.addEventListener("mouseenter", function(){
-
         popup.classList.remove("hidden");
         popupImg.src = this.src;
-
     });
 
     img.addEventListener("mousemove", function(e){
-
         popup.style.top = (e.pageY - 220) + "px";
         popup.style.left = (e.pageX + 20) + "px";
-
     });
 
     img.addEventListener("mouseleave", function(){
-
         popup.classList.add("hidden");
-
     });
 
 });
-
 </script>
 
-
-<!-- HOVER EFFECT -->
+<!-- STYLE -->
 <style>
 
 .gallery-card{
@@ -144,6 +135,5 @@ document.querySelectorAll(".preview-img").forEach(img => {
 }
 
 </style>
-
 
 @endsection

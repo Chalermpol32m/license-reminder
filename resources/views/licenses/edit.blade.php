@@ -78,16 +78,16 @@ class="w-full border rounded-lg px-4 py-2">
 
 <div class="flex gap-3 pt-4">
 
-
-
 <button
 class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
 💾 บันทึกการแก้ไข
 </button>
-<a href="/licenses"
+
+<a href="{{ route('licenses.index') }}"
 class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
 ยกเลิก
 </a>
+
 </div>
 
 </div>
@@ -95,7 +95,6 @@ class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
 </form>
 
 </div>
-
 
 
 <!-- RIGHT : IMAGE PREVIEW -->
@@ -109,8 +108,8 @@ class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
 @if($license->license_image)
 
 <img id="preview"
-src="{{ asset('storage/'.$license->license_image) }}"
-class="rounded-lg border shadow max-h-[250px]">
+src="{{ $license->license_image }}"
+class="rounded-lg border shadow max-h-[250px] object-cover">
 
 @else
 
@@ -119,7 +118,6 @@ src="https://via.placeholder.com/400x250?text=License+Preview"
 class="rounded-lg border shadow max-h-[250px]">
 
 @endif
-</div>
 
 </div>
 
@@ -127,31 +125,31 @@ class="rounded-lg border shadow max-h-[250px]">
 
 </div>
 
+</div>
+
+<!-- 🔥 PREVIEW SCRIPT FIX -->
 <script>
-
-// preview image when upload
 
 document.getElementById('imageInput')
 .addEventListener('change', function(e){
 
-const file = e.target.files[0]
+const file = e.target.files[0];
 
 if(file){
 
-const reader = new FileReader()
+const reader = new FileReader();
 
 reader.onload = function(e){
 
-document.getElementById('previewImage')
-.src = e.target.result
+document.getElementById('preview').src = e.target.result;
 
 }
 
-reader.readAsDataURL(file)
+reader.readAsDataURL(file);
 
 }
 
-})
+});
 
 </script>
 

@@ -21,94 +21,55 @@ enctype="multipart/form-data">
 <!-- LEFT : FORM -->
 <div class="space-y-4">
 
-<!-- ชื่อ -->
 <div>
-<label class="block mb-2 font-semibold dark:text-white">
-ชื่อคนขับ
-</label>
-
-<input
-type="text"
-name="driver_name"
-class="w-full border rounded-lg px-3 py-2"
-required>
+<label class="block mb-2 font-semibold dark:text-white">ชื่อคนขับ</label>
+<input type="text" name="driver_name"
+class="w-full border rounded-lg px-3 py-2" required>
 </div>
 
-<!-- เลขใบขับขี่ -->
 <div>
-<label class="block mb-2 font-semibold dark:text-white">
-เลขใบขับขี่
-</label>
-
-<input
-type="text"
-name="license_number"
-class="w-full border rounded-lg px-3 py-2"
-required>
+<label class="block mb-2 font-semibold dark:text-white">เลขใบขับขี่</label>
+<input type="text" name="license_number"
+class="w-full border rounded-lg px-3 py-2" required>
 </div>
 
-<!-- ทะเบียน -->
 <div>
-<label class="block mb-2 font-semibold dark:text-white">
-ทะเบียนรถ
-</label>
-
-<input
-type="text"
-name="plate_number"
-class="w-full border rounded-lg px-3 py-2"
-required>
+<label class="block mb-2 font-semibold dark:text-white">ทะเบียนรถ</label>
+<input type="text" name="plate_number"
+class="w-full border rounded-lg px-3 py-2" required>
 </div>
 
-<!-- วันหมดอายุ -->
 <div>
-<label class="block mb-2 font-semibold dark:text-white">
-วันหมดอายุ
-</label>
+<label class="block mb-2 font-semibold dark:text-white">วันหมดอายุ</label>
 
-<input
-type="date"
-name="expire_date"
-id="expire_date"
-class="w-full border rounded-lg px-3 py-2"
-required>
+<input type="date" name="expire_date" id="expire_date"
+class="w-full border rounded-lg px-3 py-2" required>
 
-<p id="days_left_text" class="text-sm text-blue-600 mt-2"></p>
+<p id="days_left_text" class="text-sm mt-2"></p>
 </div>
 
-<!-- อัปโหลดรูป -->
 <div>
+<label class="block mb-2 font-semibold dark:text-white">รูปใบขับขี่</label>
 
-<label class="block mb-2 font-semibold dark:text-white">
-รูปใบขับขี่
-</label>
-
-<input
-type="file"
+<input type="file"
 name="license_image"
 id="imageInput"
 accept="image/*"
 class="w-full border rounded-lg px-3 py-2">
-
 </div>
 
 </div>
-
 
 <!-- RIGHT : PREVIEW -->
-
 <div class="flex flex-col items-center justify-center">
 
-<p class="mb-3 font-semibold dark:text-white">
-Preview
-</p>
+<p class="mb-3 font-semibold dark:text-white">Preview</p>
 
 <div class="border rounded-xl p-4 bg-gray-50">
 
-<img
-id="preview"
+<img id="preview"
 src="https://via.placeholder.com/250x160?text=No+Image"
-class="rounded w-64">
+class="rounded w-64 object-cover">
 
 </div>
 
@@ -120,9 +81,7 @@ class="rounded w-64">
 
 </div>
 
-
-<!-- ปุ่ม -->
-
+<!-- BUTTON -->
 <div class="mt-8 flex gap-4">
 
 <button
@@ -143,56 +102,60 @@ class="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500">
 
 </div>
 
-
 <script>
 
+// 🔥 Preview Image
 document.getElementById('imageInput').addEventListener('change', function(){
 
 const file = this.files[0];
 
 if(file){
 
+// ตรวจ type
+if(!file.type.startsWith('image/')){
+alert('กรุณาเลือกไฟล์รูปภาพ');
+this.value = '';
+return;
+}
+
 const reader = new FileReader();
 
 reader.onload = function(e){
-
 document.getElementById('preview').src = e.target.result;
-
 }
 
 reader.readAsDataURL(file);
 
+}else{
+// reset
+document.getElementById('preview').src =
+"https://via.placeholder.com/250x160?text=No+Image";
 }
 
 });
 
+
+// 🔥 Days Left Calculator
 document.getElementById("expire_date").addEventListener("change", function(){
 
 let expireDate = new Date(this.value);
-
 let today = new Date();
 
 let diff = expireDate - today;
-
 let days = Math.ceil(diff / (1000 * 60 * 60 * 24));
 
 let text = document.getElementById("days_left_text");
 
 if(days < 0){
-
 text.innerHTML = "❌ ใบขับขี่หมดอายุแล้ว";
-
 text.className = "text-red-600 text-sm mt-2";
-
 }else{
-
 text.innerHTML = "⏳ เหลืออีก " + days + " วัน";
-
 text.className = "text-blue-600 text-sm mt-2";
-
 }
 
 });
 
 </script>
+
 @endsection

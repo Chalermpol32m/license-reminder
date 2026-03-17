@@ -24,37 +24,21 @@ public function dashboard()
         ->get();
 
     foreach ($licenses as $license) {
-
         $expireDate = Carbon::parse($license->expire_date);
         $today = Carbon::today();
-
         $license->days_left = $today->diffInDays($expireDate, false)+1;
     }
 
     $total = $licenses->count();
-
     $expired = $licenses->where('days_left','<',0)->count();
 
-    $alert3 = $licenses
-        ->where('days_left','>=',0)
-        ->where('days_left','<=',3)
-        ->count();
-
-    $alert7 = $licenses
-        ->where('days_left','>',3)
-        ->where('days_left','<=',7)
-        ->count();
-
-    $alert15 = $licenses
-        ->where('days_left','>',7)
-        ->where('days_left','<=',15)
-        ->count();
+    $alert3 = $licenses->where('days_left','>=',0)->where('days_left','<=',3)->count();
+    $alert7 = $licenses->where('days_left','>',3)->where('days_left','<=',7)->count();
+    $alert15 = $licenses->where('days_left','>',7)->where('days_left','<=',15)->count();
 
     $totalNotify = $expired + $alert3 + $alert7 + $alert15;
 
-    $urgentLicenses = $licenses
-        ->where('days_left','<=',3)
-        ->take(9);
+    $urgentLicenses = $licenses->where('days_left','<=',3)->take(9);
 
     $monthly = DriverLicense::where('user_id', Auth::id())
         ->selectRaw('EXTRACT(MONTH FROM expire_date) as month, COUNT(*) as total')
@@ -73,17 +57,8 @@ public function dashboard()
         ->get();
 
     return view('dashboard', compact(
-        'licenses',
-        'total',
-        'expired',
-        'alert3',
-        'alert7',
-        'alert15',
-        'totalNotify',
-        'urgentLicenses',
-        'monthly',
-        'trendLicenses',
-        'thisMonthLicenses'
+        'licenses','total','expired','alert3','alert7','alert15',
+        'totalNotify','urgentLicenses','monthly','trendLicenses','thisMonthLicenses'
     ));
 }
 
@@ -110,29 +85,14 @@ public function index(Request $request)
         $query->whereDate('expire_date', '>', Carbon::today()->addDays(15));
     }
 
-    if ($request->sort == 'desc') {
-        $query->orderBy('expire_date', 'desc');
-    } else {
-        $query->orderBy('expire_date', 'asc');
-    }
+    $query->orderBy('expire_date', $request->sort == 'desc' ? 'desc' : 'asc');
 
-    $licenses = $query
-        ->paginate(10)
-        ->withQueryString();
+    $licenses = $query->paginate(10)->withQueryString();
 
     foreach ($licenses as $license) {
+        $daysLeft = Carbon::today()->diffInDays(Carbon::parse($license->expire_date), false)+1;
 
-        $daysLeft = Carbon::today()
-            ->diffInDays(Carbon::parse($license->expire_date), false)+1;
-
-        if ($daysLeft <= 3) {
-            $license->status = 'danger';
-        } elseif ($daysLeft <= 15) {
-            $license->status = 'warning';
-        } else {
-            $license->status = 'safe';
-        }
-
+        $license->status = $daysLeft <= 3 ? 'danger' : ($daysLeft <= 15 ? 'warning' : 'safe');
         $license->days_left = $daysLeft;
     }
 
@@ -146,31 +106,21 @@ public function create()
 
 public function store(Request $request)
 {
-
     $request->validate([
         'driver_name' => 'required',
         'license_number' => 'required',
         'plate_number' => 'required',
         'expire_date' => 'required',
-        'license_image' => 'image|mimes:jpg,jpeg,png|max:2048'
+        'license_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
 
     $imagePath = null;
 
     if ($request->hasFile('license_image')) {
+        $path = Storage::disk('cloudinary')
+            ->put('licenses', $request->file('license_image'));
 
-        $result = cloudinary()->upload(
-            $request->file('license_image')->getRealPath(),
-            [
-                'folder' => 'licenses',
-                'transformation' => [
-                    'width' => 800,
-                    'crop' => 'scale'
-                ]
-            ]
-        );
-
-        $imagePath = $result->getSecurePath();
+        $imagePath = Storage::disk('cloudinary')->url($path);
     }
 
     DriverLicense::create([
@@ -187,67 +137,61 @@ public function store(Request $request)
 
 public function edit($id)
 {
-    $license = DriverLicense::where('user_id', Auth::id())
-        ->findOrFail($id);
-
+    $license = DriverLicense::where('user_id', Auth::id())->findOrFail($id);
     return view('licenses.edit', compact('license'));
 }
 
 public function gallery()
 {
-    $licenses = DriverLicense::where('user_id', Auth::id())
-        ->latest()
-        ->get();
-
+    $licenses = DriverLicense::where('user_id', Auth::id())->latest()->get();
     return view('licenses.gallery', compact('licenses'));
+}
+
+// 🔥 ฟังก์ชันช่วยแปลง path Cloudinary (สำคัญ)
+private function getCloudinaryPath($url)
+{
+    $path = parse_url($url, PHP_URL_PATH);
+    $path = explode('/upload/', $path)[1] ?? null;
+    return preg_replace('/^v\d+\//', '', $path);
 }
 
 public function update(Request $request, $id)
 {
-
     $request->validate([
         'driver_name' => 'required',
         'license_number' => 'required',
         'plate_number' => 'required',
         'expire_date' => 'required|date',
+        'license_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
     ]);
 
-    $license = DriverLicense::where('user_id', Auth::id())
-        ->findOrFail($id);
+    $license = DriverLicense::where('user_id', Auth::id())->findOrFail($id);
 
     if ($request->hasFile('license_image')) {
 
+        // 🔥 ลบรูปเก่า
         if ($license->license_image) {
-
-            $oldPath = parse_url($license->license_image, PHP_URL_PATH);
-            $oldPath = ltrim($oldPath, '/image/upload/');
-
-            Storage::disk('cloudinary')->delete($oldPath);
+            $oldPath = $this->getCloudinaryPath($license->license_image);
+            if ($oldPath) {
+                Storage::disk('cloudinary')->delete($oldPath);
+            }
         }
 
-        $result = cloudinary()->upload(
-            $request->file('license_image')->getRealPath(),
-            [
-                'folder' => 'licenses',
-                'transformation' => [
-                    'width' => 800,
-                    'crop' => 'scale'
-                ]
-            ]
-        );
+        // 🔥 อัปใหม่
+        $path = Storage::disk('cloudinary')
+            ->put('licenses', $request->file('license_image'));
 
-        $license->license_image = $result->getSecurePath();
+        $license->license_image = Storage::disk('cloudinary')->url($path);
     }
 
-    $license->driver_name = $request->driver_name;
-    $license->license_number = $request->license_number;
-    $license->plate_number = $request->plate_number;
-    $license->expire_date = $request->expire_date;
+    $license->update([
+        'driver_name' => $request->driver_name,
+        'license_number' => $request->license_number,
+        'plate_number' => $request->plate_number,
+        'expire_date' => $request->expire_date,
+    ]);
 
-    $license->save();
-
-    return redirect()->route('licenses.index')
-        ->with('success', 'แก้ไขเรียบร้อย');
+    return redirect()->route('licenses.index')->with('success', 'แก้ไขเรียบร้อย');
 }
 
 public function destroy($id)
@@ -255,11 +199,10 @@ public function destroy($id)
     $license = DriverLicense::findOrFail($id);
 
     if ($license->license_image) {
-
-        $path = parse_url($license->license_image, PHP_URL_PATH);
-        $path = ltrim($path, '/image/upload/');
-
-        Storage::disk('cloudinary')->delete($path);
+        $path = $this->getCloudinaryPath($license->license_image);
+        if ($path) {
+            Storage::disk('cloudinary')->delete($path);
+        }
     }
 
     $license->delete();
