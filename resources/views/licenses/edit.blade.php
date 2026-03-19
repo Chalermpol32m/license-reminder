@@ -108,9 +108,9 @@ class="px-5 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
 @if($license->license_image)
 
 <img id="preview"
-src="{{ $license->license_image }}"
+src="{{ str_replace('/upload/', '/upload/w_400,q_auto,f_auto/', $license->license_image) }}"
+loading="lazy"
 class="rounded-lg border shadow max-h-[250px] object-cover">
-
 @else
 
 <img id="preview"

@@ -1,35 +1,39 @@
 <?php
 
-
 use App\Http\Controllers\LicenseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DriverLicenseController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\DeliveryJobController;
+use Illuminate\Http\Request;
 
+/*
+|--------------------------------------------------------------------------
+| Home
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return redirect('/dashboard');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Auth Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth'])->group(function () {
 
-    Route::post('/jobs/auto-assign',[DeliveryJobController::class,'autoAssign']);
+    Route::post('/jobs/auto-assign', [DeliveryJobController::class, 'autoAssign']);
     
     Route::get('/dashboard', [DriverLicenseController::class, 'dashboard'])
         ->name('dashboard');
 
-   Route::get('/gallery', [DriverLicenseController::class, 'gallery'])
-    ->name('gallery');
+    Route::get('/gallery', [DriverLicenseController::class, 'gallery'])
+        ->name('gallery');
 
     // resource route
     Route::resource('licenses', DriverLicenseController::class);
-
-});
-
-Route::post('/webhook', function (\Illuminate\Http\Request $request) {
-    \Log::info($request->all());
-    return response()->json(['status' => 'ok']);
 });
 
 /*
@@ -37,9 +41,14 @@ Route::post('/webhook', function (\Illuminate\Http\Request $request) {
 | Transport Jobs
 |--------------------------------------------------------------------------
 */
-Route::get('/jobs',[DeliveryJobController::class,'index']);
-Route::post('/jobs/store',[DeliveryJobController::class,'store']);
+Route::get('/jobs', [DeliveryJobController::class, 'index']);
+Route::post('/jobs/store', [DeliveryJobController::class, 'store']);
 
+/*
+|--------------------------------------------------------------------------
+| Create User (DEV ONLY)
+|--------------------------------------------------------------------------
+*/
 Route::get('/create-user', function () {
 
     User::create([
@@ -51,4 +60,27 @@ Route::get('/create-user', function () {
     return "User created";
 });
 
+/*
+|--------------------------------------------------------------------------
+| 🔥 RUN SCHEDULE (สำคัญมาก)
+|--------------------------------------------------------------------------
+*/
+Route::get('/run-schedule', function () {
+
+    // 🔐 กันยิงมั่ว
+    if (request('key') !== env('SCHEDULE_KEY')) {
+        abort(403);
+    }
+
+    // 🚀 รัน schedule
+    \Artisan::call('schedule:run');
+
+    return 'OK';
+});
+
+/*
+|--------------------------------------------------------------------------
+| Auth
+|--------------------------------------------------------------------------
+*/
 require __DIR__.'/auth.php';
