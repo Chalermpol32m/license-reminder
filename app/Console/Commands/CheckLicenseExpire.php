@@ -81,47 +81,56 @@ class CheckLicenseExpire extends Command
         $this->info("=================================");
     }
 
-    private function sendLine($license, $title, $days)
-    {
-        Carbon::setLocale('th');
+   private function sendLine($license, $title, $days)
+{
+    Carbon::setLocale('th');
 
-        $expireDate = Carbon::parse($license->expire_date)
-            ->translatedFormat('d F Y');
+    $expireDate = Carbon::parse($license->expire_date)
+        ->translatedFormat('d F Y');
 
-        $message = "🚗 แจ้งเตือนใบขับขี่\n";
-        $message .= "━━━━━━━━━━━━━━\n";
-        $message .= "👤 คนขับ : {$license->driver_name}\n";
-        $message .= "🚘 ทะเบียน : {$license->plate_number}\n";
-        $message .= "📅 วันหมดอายุ : {$expireDate}\n";
-        $message .= "⏳ เหลือเวลา : {$days} วัน\n";
-        $message .= "━━━━━━━━━━━━━━\n";
-        $message .= "⚠ {$title}\n";
-        $message .= "📌 กรุณาดำเนินการต่ออายุ";
+    $message = "🚗 แจ้งเตือนใบขับขี่\n";
+    $message .= "━━━━━━━━━━━━━━\n";
+    $message .= "👤 คนขับ : {$license->driver_name}\n";
+    $message .= "🚘 ทะเบียน : {$license->plate_number}\n";
+    $message .= "📅 วันหมดอายุ : {$expireDate}\n";
+    $message .= "⏳ เหลือเวลา : {$days} วัน\n";
+    $message .= "━━━━━━━━━━━━━━\n";
+    $message .= "⚠ {$title}\n";
+    $message .= "📌 กรุณาดำเนินการต่ออายุ";
 
-        $user = $license->user;
+    $user = $license->user;
 
-        if (!$user || !$user->line_user_id) {
-            $this->error("ไม่มี LINE user: {$license->driver_name}");
-            return;
-        }
+    // 🔥 DEBUG ตรงนี้
+    $this->info("===== DEBUG LINE =====");
+    $this->info("Driver: " . $license->driver_name);
+    $this->info("User ID: " . ($user->line_user_id ?? 'NULL'));
+    $this->info("Token: " . (config('services.line.token') ? 'OK' : 'NULL'));
 
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . config('services.line.token'),
-            'Content-Type' => 'application/json',
-        ])->post('https://api.line.me/v2/bot/message/push', [
-            'to' => $user->line_user_id,
-            'messages' => [
-                [
-                    'type' => 'text',
-                    'text' => $message,
-                ]
-            ]
-        ]);
-
-        if ($response->successful()) {
-            $this->info("ส่ง LINE สำเร็จ: {$license->driver_name}");
-        } else {
-            $this->error("LINE ส่งไม่สำเร็จ: " . $response->body());
-        }
+    if (!$user || !$user->line_user_id) {
+        $this->error("ไม่มี LINE user: {$license->driver_name}");
+        return;
     }
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer ' . config('services.line.token'),
+        'Content-Type' => 'application/json',
+    ])->post('https://api.line.me/v2/bot/message/push', [
+        'to' => $user->line_user_id,
+        'messages' => [
+            [
+                'type' => 'text',
+                'text' => $message,
+            ]
+        ]
+    ]);
+
+    // 🔥 DEBUG response
+    $this->info("Response: " . $response->body());
+
+    if ($response->successful()) {
+        $this->info("ส่ง LINE สำเร็จ: {$license->driver_name}");
+    } else {
+        $this->error("LINE ส่งไม่สำเร็จ");
+    }
+}
 }
