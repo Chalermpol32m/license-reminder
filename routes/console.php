@@ -28,6 +28,4 @@ Artisan::command('inspire', function () {
 |
 */
 
-Schedule::command('check:license-expire')
-    ->everyMinute()
-    ->timezone('Asia/Bangkok');
+Schedule::command('check:license-expire')->everyMinute();
