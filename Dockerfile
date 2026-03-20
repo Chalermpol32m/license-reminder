@@ -11,7 +11,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 COPY . .
 
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-gd
+RUN RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 
 RUN php artisan storage:link
 
