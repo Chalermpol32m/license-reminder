@@ -61,22 +61,9 @@ Route::get('/create-user', function () {
     return "User created";
 });
 
-/*
-|--------------------------------------------------------------------------
-| 🔥 RUN SCHEDULE (สำคัญมาก)
-|--------------------------------------------------------------------------
-*/
-Route::get('/run-schedule', function () {
-
-    // 🔐 กันยิงมั่ว
-    if (request('key') !== env('SCHEDULE_KEY')) {
-        abort(403);
-    }
-
-    // 🚀 รัน schedule
-    \Artisan::call('schedule:run');
-
-    return 'OK';
+Route::get('/test-line', function () {
+    \Artisan::call('check:license-expire');
+    return 'TEST OK';
 });
 
 // 🔹 route สำหรับ auto assign
