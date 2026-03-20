@@ -15,7 +15,9 @@ class CheckLicenseExpire extends Command
     public function handle()
     {
 
-  
+     if (now()->format('H:i') !== '09:00') {
+         return;
+    }
 
         $licenses = DriverLicense::whereDate('expire_date', '<=', now()->addDays(15))->get();
 
