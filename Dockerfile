@@ -17,4 +17,4 @@ RUN php artisan storage:link
 
 EXPOSE 10000
 
-CMD php artisan serve --host=0.0.0.0 --port=$PORT & php artisan schedule:work
+CMD sh -c "php artisan serve --host=0.0.0.0 --port=$PORT & while true; do php artisan schedule:run; sleep 60; done"
