@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\DeliveryJobController;
 use Illuminate\Http\Request;
+use App\Http\Controllers\VehicleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,6 +79,14 @@ Route::get('/run-schedule', function () {
     return 'OK';
 });
 
+// 🔹 route สำหรับ auto assign
+Route::get('/jobs/auto-assign', [DeliveryJobController::class, 'autoAssign'])
+    ->name('jobs.autoAssign');
+
+Route::get('/vehicles', [VehicleController::class, 'index']);
+Route::post('/vehicles/store', [VehicleController::class, 'store']);
+Route::post('/vehicles/update/{id}', [VehicleController::class, 'update']);
+Route::post('/jobs/import', [DeliveryJobController::class, 'import']);
 /*
 |--------------------------------------------------------------------------
 | Auth

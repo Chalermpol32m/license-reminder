@@ -1,14 +1,6 @@
-<?php
+use App\Models\Job;
 
-namespace App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class Driver extends Model
+public function jobs()
 {
-    protected $fillable = [
-        'user_id',
-        'name',
-        'phone'
-    ];
+    return $this->hasMany(Job::class);
 }

@@ -13,7 +13,8 @@ class DeliveryJob extends Model
         'delivery_date',
         'driver_id',
         'vehicle_plate',
-        'status'
+        'status',
+        'distance'
     ];
     public function driver()
 {
